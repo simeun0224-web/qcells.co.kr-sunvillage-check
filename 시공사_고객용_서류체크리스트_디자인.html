@@ -77,7 +77,12 @@
   .card h2{
     font-size:20px;font-weight:800;margin:0;color:var(--ink);
   }
-  .card .card-sub{font-size:13px;color:var(--muted);margin:0 0 20px;font-weight:500;}
+  .card .card-sub{font-size:13px;color:var(--muted);margin:0 0 14px;font-weight:500;}
+  .hint{
+    display:inline-flex;align-items:center;gap:6px;
+    background:#EEF3FA;color:var(--navy);font-size:12px;font-weight:700;
+    padding:6px 12px;border-radius:999px;margin:0 0 16px;
+  }
   .reset-btn{
     border:none;background:none;color:var(--muted);font-size:12px;font-weight:600;
     cursor:pointer;text-decoration:underline;padding:0;
@@ -94,7 +99,8 @@
   .section-label.mv{color:#C15A16;}
   .section-progress{font-size:11px;font-weight:700;color:var(--muted);}
 
-  .item-row{display:flex;align-items:flex-start;gap:6px;padding:7px 0;}
+  .item-row{display:flex;align-items:flex-start;gap:6px;padding:7px 8px;border-radius:10px;transition:background .15s ease;}
+  .item-row.is-done{background:#EFF8F2;}
   .item-label{display:flex;gap:12px;align-items:flex-start;cursor:pointer;flex:1;min-width:0;}
   .item-label input[type="checkbox"]{
     position:absolute;opacity:0;width:0;height:0;
@@ -104,9 +110,19 @@
     flex:0 0 26px;width:26px;height:26px;border-radius:8px;
     background:var(--navy);color:#fff;font-size:12.5px;font-weight:800;
     display:flex;align-items:center;justify-content:center;margin-top:1px;
-    transition:background .15s ease, transform .1s ease;
+    transition:background .15s ease, transform .15s ease;
+    position:relative;
   }
   .badge.teal{background:var(--teal);}
+  .badge .num, .badge .tick{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    transition:opacity .12s ease, transform .12s ease;
+  }
+  .badge .tick{opacity:0;transform:scale(.3);font-size:14px;}
+  .badge .num{opacity:1;transform:scale(1);}
+  .item-row.is-done .badge{background:var(--done);transform:scale(1.06);}
+  .item-row.is-done .badge .num{opacity:0;transform:scale(.3);}
+  .item-row.is-done .badge .tick{opacity:1;transform:scale(1);}
 
   .chk{
     flex:0 0 20px;width:20px;height:20px;border-radius:6px;margin-top:2px;
@@ -119,13 +135,12 @@
     border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);
     opacity:0;
   }
-
-  input[type="checkbox"]:checked ~ .badge{background:var(--done);}
-  input[type="checkbox"]:checked ~ .chk{background:var(--done);border-color:var(--done);}
-  input[type="checkbox"]:checked ~ .chk::after{opacity:1;}
-  input[type="checkbox"]:checked ~ .item-text-wrap .item-text{
-    color:#95A0B3;text-decoration:line-through;text-decoration-color:#B7C0CE;
+  .item-row.is-done .chk{background:var(--done);border-color:var(--done);}
+  .item-row.is-done .chk::after{opacity:1;}
+  .item-row.is-done .item-text{
+    color:#8FA0A0;text-decoration:line-through;text-decoration-color:#B7C0CE;
   }
+  .item-row.is-done .item-note{color:#A9B7B7;}
 
   .item-text-wrap{display:block;min-width:0;}
   .item-text{font-size:14.5px;font-weight:700;color:var(--ink);transition:color .15s ease;}
@@ -153,6 +168,10 @@
   }
   footer p{margin:0;}
   footer strong{color:#fff;}
+  .copyright{
+    max-width:1180px;margin:18px auto 0;text-align:center;
+    color:rgba(255,255,255,.55);font-size:11.5px;letter-spacing:.02em;
+  }
 </style>
 </head>
 <body>
@@ -186,6 +205,7 @@
         <button class="reset-btn" data-reset="contractor">체크 초기화</button>
       </div>
       <p class="card-sub">공통 시설자금 서류 총괄 · 19항목</p>
+      <p class="hint">항목을 클릭하면 체크돼요</p>
 
       <div class="section-label"><span>공통 필수 서류</span><span class="section-progress" data-progress="con-main"></span></div>
       <div id="list-con-main"></div>
@@ -203,9 +223,15 @@
         <button class="reset-btn" data-reset="customer">체크 초기화</button>
       </div>
       <p class="card-sub">햇빛소득마을 신청자(발전사업자) 기준 · 8항목</p>
+      <p class="hint">항목을 클릭하면 체크돼요</p>
 
       <div class="section-label"><span>신청자 필수 서류</span><span class="section-progress" data-progress="cust-main"></span></div>
       <div id="list-cust-main"></div>
+
+      <div class="divider"></div>
+
+      <div class="section-label"><span>태양광 추가 서류 · 해당 시</span><span class="section-progress" data-progress="cust-solar"></span></div>
+      <div id="list-cust-solar"></div>
 
       <div class="highlight-box">
         <div class="section-label mv"><span>햇빛소득마을 추가 서류 · 지원조건</span><span class="section-progress" data-progress="hatbit"></span></div>
@@ -222,6 +248,8 @@
     <p><strong>※</strong> 링크 아이콘(↗)은 서류를 발급·다운로드할 수 있는 대표 사이트로 연결됩니다. 자체 작성 서류(계약서·견적서 등)는 링크가 없습니다.</p>
     <p><strong>※</strong> 체크 상태는 이 브라우저에 자동 저장됩니다 (다른 기기·브라우저와는 공유되지 않음).</p>
   </footer>
+
+  <p class="copyright">Copyright &copy; 2026 Qcells. All rights reserved.</p>
 
 </div>
 
@@ -254,8 +282,6 @@ const conMain = [
 const conSolar = [
   {doc:"탄소배출량 검증 인증서", note:"설비공급업체 발급 · 태양광 모듈 655kgCO₂/kW 이하 검증제품에 한해 지원", link:null},
   {doc:"보험 또는 공제증서", note:"최종 인출 전 제출 · 엔지니어링공제조합(EGI) 태양광종합공제", link:"https://www.egic.co.kr"},
-  {doc:"계통연계 사전확인서", note:"1MW 초과 시 · 한전 사이버지점", link:"https://cyber.kepco.co.kr"},
-  {doc:"한전 전기시설부담금 고지서", note:"1MW 이하 시 · 한전 사이버지점", link:"https://cyber.kepco.co.kr"},
 ];
 
 const custMain = [
@@ -267,6 +293,11 @@ const custMain = [
   {doc:"계약서", note:"2025.8.1 이후 계약 · 서명·날인 필수", link:null},
   {doc:"부지 관련 확인서류", note:"등기부등본 · 인터넷등기소", link:"http://www.iros.go.kr"},
   {doc:"시공사 위임장 + 인감증명서", note:"대행 시 · 인감증명서는 정부24", link:"https://www.gov.kr"},
+];
+
+const custSolar = [
+  {doc:"계통연계 사전확인서", note:"1MW 초과 태양광 해당 시 · 한전ON", link:"https://online.kepco.co.kr"},
+  {doc:"한전 전기시설부담금 고지서(청구서)", note:"1MW 이하 태양광 해당 시 · 한전ON", link:"https://online.kepco.co.kr"},
 ];
 
 const hatbit = [
@@ -283,13 +314,13 @@ function renderList(containerId, items, prefix, badgeType){
   items.forEach((it, i)=>{
     const id = prefix + "-" + i;
     const badgeHtml = badgeType === "number"
-      ? `<span class="badge">${String(i+1).padStart(2,"0")}</span>`
+      ? `<span class="badge"><span class="num">${String(i+1).padStart(2,"0")}</span><span class="tick">✓</span></span>`
       : `<span class="chk${badgeType==='orange' ? ' orange':''}"></span>`;
     const linkHtml = it.link
       ? `<a class="link-ico" href="${it.link}" target="_blank" rel="noopener" title="발급·다운로드 바로가기">↗</a>`
       : `<span class="link-spacer"></span>`;
     html += `
-      <div class="item-row">
+      <div class="item-row" data-row="${id}">
         <label class="item-label">
           <input type="checkbox" data-id="${id}">
           ${badgeHtml}
@@ -304,6 +335,7 @@ function renderList(containerId, items, prefix, badgeType){
 renderList("list-con-main", conMain, "con-main", "number");
 renderList("list-con-solar", conSolar, "con-solar", "square");
 renderList("list-cust-main", custMain, "cust-main", "number-teal");
+renderList("list-cust-solar", custSolar, "cust-solar", "square");
 renderList("list-hatbit", hatbit, "hatbit", "orange");
 
 // number-teal badge type fix (customer uses teal numbered badges)
@@ -322,7 +354,10 @@ let state = loadState();
 
 function applyState(){
   document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb=>{
-    cb.checked = !!state[cb.dataset.id];
+    const checked = !!state[cb.dataset.id];
+    cb.checked = checked;
+    const row = cb.closest('.item-row');
+    if(row) row.classList.toggle('is-done', checked);
   });
   updateProgress();
 }
@@ -337,21 +372,25 @@ function updateProgress(){
   const conMainP = calc("con-main");
   const conSolarP = calc("con-solar");
   const custMainP = calc("cust-main");
+  const custSolarP = calc("cust-solar");
   const hatbitP = calc("hatbit");
 
   document.querySelector('[data-progress="con-main"]').textContent = `완료 ${conMainP.done}/${conMainP.total}`;
   document.querySelector('[data-progress="con-solar"]').textContent = `완료 ${conSolarP.done}/${conSolarP.total}`;
   document.querySelector('[data-progress="cust-main"]').textContent = `완료 ${custMainP.done}/${custMainP.total}`;
+  document.querySelector('[data-progress="cust-solar"]').textContent = `완료 ${custSolarP.done}/${custSolarP.total}`;
   document.querySelector('[data-progress="hatbit"]').textContent = `완료 ${hatbitP.done}/${hatbitP.total}`;
 
   document.getElementById('cont-total').textContent = `${conMainP.done+conSolarP.done}/${conMainP.total+conSolarP.total}`;
-  document.getElementById('cust-total').textContent = `${custMainP.done+hatbitP.done}/${custMainP.total+hatbitP.total}`;
+  document.getElementById('cust-total').textContent = `${custMainP.done+custSolarP.done+hatbitP.done}/${custMainP.total+custSolarP.total+hatbitP.total}`;
 }
 
 document.addEventListener('change', (e)=>{
   if(e.target.matches('input[type="checkbox"][data-id]')){
     state[e.target.dataset.id] = e.target.checked;
     saveState(state);
+    const row = e.target.closest('.item-row');
+    if(row) row.classList.toggle('is-done', e.target.checked);
     updateProgress();
   }
 });
@@ -359,11 +398,13 @@ document.addEventListener('change', (e)=>{
 document.querySelectorAll('.reset-btn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const scope = btn.dataset.reset;
-    const prefixes = scope === 'contractor' ? ['con-main','con-solar'] : ['cust-main','hatbit'];
+    const prefixes = scope === 'contractor' ? ['con-main','con-solar'] : ['cust-main','cust-solar','hatbit'];
     document.querySelectorAll('input[type="checkbox"][data-id]').forEach(cb=>{
       if(prefixes.some(p=>cb.dataset.id.startsWith(p+'-'))){
         cb.checked = false;
         delete state[cb.dataset.id];
+        const row = cb.closest('.item-row');
+        if(row) row.classList.remove('is-done');
       }
     });
     saveState(state);
